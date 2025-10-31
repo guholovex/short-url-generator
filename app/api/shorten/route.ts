@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { kv } from '@vercel/kv'; // 需要安装 @vercel/kv
-import { getDbConnection, saveShortUrl } from '@/lib/utils';
+import { getDbConnection } from '@/lib/db';
+import { saveShortUrl } from '@/lib/utils';
 
 export async function POST(req: NextRequest) {
   try {
