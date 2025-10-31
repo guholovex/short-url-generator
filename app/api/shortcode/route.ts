@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDbConnection, getLongUrl } from '@/lib/utils';
+import { getDbConnection } from '@/lib/db'; // 从 db.ts 导入
+import { getLongUrl } from '@/lib/utils'; // getLongUrl 在 utils
 
 export async function GET(
   req: NextRequest,
