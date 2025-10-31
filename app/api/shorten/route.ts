@@ -3,6 +3,8 @@ import { kv } from '@vercel/kv'; // 需要安装 @vercel/kv
 import { getDbConnection } from '@/lib/db';
 import { saveShortUrl } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic'; // 强制动态渲染，跳过 prerender
+
 export async function POST(req: NextRequest) {
   try {
     const { url, custom_code } = await req.json();
