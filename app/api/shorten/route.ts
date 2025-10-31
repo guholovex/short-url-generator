@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     }://${req.headers.get('host')}/`;
     const shortUrl = `${baseUrl}${shortCode}`;
 
-    await kv.set(rateKey, { ...rateData, count: rateData.count + 1 });
+    // await kv.set(rateKey, { ...rateData, count: rateData.count + 1 });
 
     return NextResponse.json({ shortUrl, message: '生成成功！' });
   } catch (error: any) {
