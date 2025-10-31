@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDbConnection } from '@/lib/db'; // 从 db.ts 导入
 import { getLongUrl } from '@/lib/utils'; // getLongUrl 在 utils
 
+export const dynamic = 'force-dynamic'; // 强制动态渲染，跳过 prerender
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { shortcode: string } }
