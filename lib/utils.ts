@@ -20,9 +20,11 @@ export async function shortCodeExists(
   db: any,
   shortCode: string
 ): Promise<boolean> {
-  const { rows } =
-    await db`SELECT 1 FROM short_urls WHERE LOWER(short_code) = LOWER(${shortCode}) LIMIT 1`;
-  return rows.length > 0;
+  const result = await db.query(
+    'SELECT 1 FROM short_urls WHERE LOWER(short_code) = LOWER($1) LIMIT 1',
+    [shortCode]
+  );
+  return result.rows.length > 0;
 }
 
 export async function saveShortUrl(
@@ -32,14 +34,14 @@ export async function saveShortUrl(
 ): Promise<string> {
   if (longUrl.length > 2000) throw new Error('URL 过长');
 
-  // 规范化 URL
   if (!longUrl.startsWith('http')) longUrl = 'https://' + longUrl;
   if (!/^https?:\/\//.test(longUrl)) throw new Error('无效 URL');
 
-  // 检查是否存在
-  const { rows: existing } =
-    await db`SELECT short_code FROM short_urls WHERE LOWER(long_url) = LOWER(${longUrl})`;
-  if (existing.length > 0) return existing[0].short_code;
+  const existingResult = await db.query(
+    'SELECT short_code FROM short_urls WHERE LOWER(long_url) = LOWER($1)',
+    [longUrl]
+  );
+  if (existingResult.rows.length > 0) return existingResult.rows[0].short_code;
 
   let shortCode: string;
   if (customCode) {
@@ -57,7 +59,10 @@ export async function saveShortUrl(
     if (attempts >= 5) throw new Error('生成短码失败（冲突过多）');
   }
 
-  await db`INSERT INTO short_urls (long_url, short_code) VALUES (${longUrl}, ${shortCode})`;
+  await db.query(
+    'INSERT INTO short_urls (long_url, short_code) VALUES ($1, $2)',
+    [longUrl, shortCode]
+  );
   return shortCode;
 }
 
@@ -65,11 +70,16 @@ export async function getLongUrl(
   db: any,
   shortCode: string
 ): Promise<string | null> {
-  const { rows } =
-    await db`SELECT long_url FROM short_urls WHERE LOWER(short_code) = LOWER(${shortCode})`;
-  if (rows.length > 0) {
-    await db`UPDATE short_urls SET clicks = clicks + 1 WHERE LOWER(short_code) = LOWER(${shortCode})`;
-    return rows[0].long_url;
+  const result = await db.query(
+    'SELECT long_url FROM short_urls WHERE LOWER(short_code) = LOWER($1)',
+    [shortCode]
+  );
+  if (result.rows.length > 0) {
+    await db.query(
+      'UPDATE short_urls SET clicks = clicks + 1 WHERE LOWER(short_code) = LOWER($1)',
+      [shortCode]
+    );
+    return result.rows[0].long_url;
   }
   return null;
 }
