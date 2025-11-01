@@ -12,7 +12,7 @@ export default function Home() {
     e.preventDefault();
     setMessage('');
     try {
-      const res = await fetch('/api/shorten', {
+      const res = await fetch('/shorten', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url, custom_code: customCode }),
