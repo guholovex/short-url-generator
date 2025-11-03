@@ -95,12 +95,20 @@ export async function saveShortUrl(
     const cachedShort = await db.kv.get<string>(cacheKey);
     if (cachedShort) return cachedShort;
 
+    // RPC 前加 log
+    console.log('Calling RPC with params:', {
+      long_url_input: longUrl,
+      custom_code_input: customCode || null,
+    });
     // 用 RPC 原子保存
     const { data, error } = await db.supabase.rpc('save_short_url_rpc', {
       long_url_input: longUrl,
       custom_code_input: customCode || null,
     } as never);
-    if (error) throw new Error(`保存失败: ${error.message}`);
+    if (error) {
+      console.error('RPC error details:', error);
+      throw new Error(`保存失败: ${error.message}`);
+    }
     if (!data) throw new Error('RPC 返回空');
 
     const shortCode = data as string;
