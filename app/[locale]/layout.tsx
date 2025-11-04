@@ -10,12 +10,10 @@ export default async function RootLayout({
   params: { locale: string };
 }) {
   // 动态加载翻译消息
-  const messages = await getMessages();
-  console.log('Detected locale:', messages?.locale);
-  console.log('Current Locale:', locale);
+  const messages = await getMessages({ locale });
 
   return (
-    <html lang={messages?.locale || 'en'}>
+    <html lang={locale || 'en'}>
       <body>
         <NextIntlClientProvider messages={messages}>
           {children}
