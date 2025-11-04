@@ -7,9 +7,7 @@ function isValidLocale(locale: string): locale is 'en' | 'zh' {
 }
 
 export default getRequestConfig(async ({ locale }) => {
-  console.log('Detected locale:', locale);
-  const defaultLocale = 'en';
-  const validLocale = locale && isValidLocale(locale) ? locale : defaultLocale;
+  const validLocale = locale && isValidLocale(locale) ? locale : 'en';
 
   return {
     locale: validLocale,

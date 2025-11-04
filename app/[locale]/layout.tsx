@@ -4,14 +4,18 @@ import { getMessages } from 'next-intl/server';
 
 export default async function RootLayout({
   children,
+  params: { locale },
 }: {
   children: React.ReactNode;
+  params: { locale: string };
 }) {
   // 动态加载翻译消息
   const messages = await getMessages();
+  console.log('Detected locale:', messages?.locale);
+  console.log('Current Locale:', locale);
 
   return (
-    <html lang={messages.locale || 'en'}>
+    <html lang={messages?.locale || 'en'}>
       <body>
         <NextIntlClientProvider messages={messages}>
           {children}
