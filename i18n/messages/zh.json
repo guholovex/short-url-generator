@@ -9,7 +9,7 @@
     "generateButton": "生成短链接",
     "yourShortUrl": "你的短链接：",
     "copyButton": "复制",
-    "successMessage": "短链接创建成功！立即复制",
+    "successMessage": "短链接创建成功！",
     "errorPrefix": "错误："
   },
   "Toast": {

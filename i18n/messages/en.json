@@ -9,7 +9,7 @@
     "generateButton": "Generate short URL",
     "yourShortUrl": "Your short URL:",
     "copyButton": "Copy",
-    "successMessage": "Short link created! Copy it now",
+    "successMessage": "Short link created! ",
     "errorPrefix": "Error: "
   },
   "Toast": {
