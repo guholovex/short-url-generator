@@ -1,4 +1,4 @@
-import './globals.css'; // 导入样式
+import '../globals.css'; // 导入样式
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 
