@@ -3,4 +3,4 @@ export const routing = {
   defaultLocale: 'en',
   localePrefix: 'as-needed',
   localeDetection: true,
-};
+} as const;
