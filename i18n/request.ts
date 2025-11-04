@@ -1,4 +1,5 @@
 import { getRequestConfig } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 
 const locales = ['en', 'zh'];
 
@@ -7,10 +8,13 @@ function isValidLocale(locale: string): locale is 'en' | 'zh' {
 }
 
 export default getRequestConfig(async ({ locale }) => {
-  const validLocale = locale && isValidLocale(locale) ? locale : 'en';
+  if (!locale || !isValidLocale(locale)) {
+    // 触发 Next.js 的 notFound 机制，渲染 404 页面
+    notFound();
+  }
 
   return {
-    locale: validLocale,
-    messages: (await import(`./messages/${validLocale}.json`)).default,
+    locale,
+    messages: (await import(`./messages/${locale}.json`)).default,
   };
 });
