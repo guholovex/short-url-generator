@@ -11,7 +11,6 @@ export default async function RootLayout({
 }) {
   // 动态加载翻译消息
   const messages = await getMessages({ locale });
-
   return (
     <html lang={locale}>
       <body>
