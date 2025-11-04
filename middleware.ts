@@ -4,10 +4,6 @@ import { routing } from './i18n/routing';
 export default createMiddleware(routing);
 
 export const config = {
-  //匹配所有路径
-  matcher: [
-    // 排除根 / 和静态/API，避免拦截首页
-    '/((?!api|_next|_vercel|.*\\..*|/|index.html).*)',
-    '/([\\w-]+)?/(.+)', // 只匹配子路径，如 [shortcode]、shorten
-  ],
+  // 匹配所有非 API 和非静态文件的路径
+  matcher: ['/((?!api|_next/static|_next/image|_vercel|.*\\..*|index.html).*)'],
 };
