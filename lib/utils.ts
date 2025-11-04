@@ -212,6 +212,7 @@ export async function getLongUrl(
 
 // 辅助：点击 RPC
 async function updateClicks(supabase: any, shortCode: string) {
+  if (!shortCode) return; // 新增：null 安全
   const { error } = await supabase.rpc('increment_clicks_rpc', {
     short_code_input: shortCode,
   });
