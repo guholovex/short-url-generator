@@ -2,7 +2,7 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin({
   // 自定义 request 配置路径
-  configPath: './app/i18n/request.ts',
+  configPath: './i18n/request.ts',
 });
 
 /** @type {import('next').NextConfig} */
