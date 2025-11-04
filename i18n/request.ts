@@ -8,7 +8,8 @@ function isValidLocale(locale: string) {
 }
 
 export default getRequestConfig(async ({ locale }) => {
-  if (!isValidLocale(locale)) notFound();
+  // 默认‘en'，避免 404
+  const validLocale = isValidLocale(locale) ? locale : 'en';
 
   return {
     locale,
