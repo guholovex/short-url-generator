@@ -1,18 +1,18 @@
 import { getRequestConfig } from 'next-intl/server';
-import { notFound } from 'next/navigation';
 
 const locales = ['en', 'zh'];
 
-function isValidLocale(locale: string) {
+function isValidLocale(locale: string): locale is 'en' | 'zh' {
   return locales.includes(locale);
 }
 
 export default getRequestConfig(async ({ locale }) => {
   // 默认‘en'，避免 404
-  const validLocale = isValidLocale(locale) ? locale : 'en';
+  const defaultLocale = 'en';
+  const validLocale = locale && isValidLocale(locale) ? locale : defaultLocale;
 
   return {
     locale: validLocale,
-    messages: (await import(`./messages/${locale}.json`)).default,
+    messages: (await import(`./messages/${validLocale}.json`)).default,
   };
 });
