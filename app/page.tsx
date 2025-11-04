@@ -1,8 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function Home() {
+  const t = useTranslations('Home');
+  const tToast = useTranslations('Toast');
+
   const [url, setUrl] = useState('');
   const [customCode, setCustomCode] = useState('');
   const [shortUrl, setShortUrl] = useState('');
@@ -19,21 +23,21 @@ export default function Home() {
       });
       const data = await res.json();
       if (data.error) {
-        setMessage(`错误: ${data.error}`);
+        setMessage(`${t('errorPrefix')}${data.error}`);
       } else {
         setShortUrl(data.shortUrl);
-        setMessage('生成成功！');
+        setMessage(t('successMessage'));
       }
     } catch (err: any) {
-      setMessage(`错误: ${err.message}`);
+      setMessage(`${t('errorPrefix')}${err.message}`);
     }
   };
 
   const copyText = (text: string) => {
     navigator.clipboard
       .writeText(text)
-      .then(() => showToast('已复制！', 'success'))
-      .catch(() => showToast('复制失败', 'error'));
+      .then(() => showToast(tToast('copied'), 'success'))
+      .catch(() => showToast(tToast('copyFailed'), 'error'));
   };
 
   const showToast = (msg: string, type: string) => {
@@ -51,13 +55,13 @@ export default function Home() {
     <main className="w-full min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-start justify-center p-4">
       <div className="container">
         <h1 className="text-3xl font-bold text-gray-800 text-center mb-8 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-          短网址生成器
+          {t('title')}
         </h1>
 
         {message && (
           <div
             className={`message ${
-              message.includes('成功') ? 'success' : 'error'
+              message.includes(t('successMessage')) ? 'success' : 'error'
             }`}
           >
             {message}
@@ -66,13 +70,13 @@ export default function Home() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="form-group">
-            <label htmlFor="url">长网址</label>
+            <label htmlFor="url">{t('longUrlLabel')}</label>
             <input
               type="url"
               id="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://example.com"
+              placeholder={t('longUrlPlaceholder')}
               required
               maxLength={2000}
               className="form-group input"
@@ -80,28 +84,28 @@ export default function Home() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="custom_code">自定义短码（可选）</label>
+            <label htmlFor="custom_code">{t('customCodeLabel')}</label>
             <input
               type="text"
               id="custom_code"
               value={customCode}
               onChange={(e) => setCustomCode(e.target.value)}
-              placeholder="myurl"
+              placeholder={t('customCodePlaceholder')}
               maxLength={10}
               className="form-group input"
             />
-            <small>小写字母数字，1-10位</small>
+            <small>{t('customCodeHint')}</small>
           </div>
 
           <button type="submit" className="btn-primary">
-            生成短网址
+            {t('generateButton')}
           </button>
         </form>
 
         {shortUrl && (
           <div className="result">
             <strong className="block text-lg font-semibold mb-2 text-gray-800">
-              你的短网址
+              {t('yourShortUrl')}
             </strong>
             <a
               href={shortUrl}
@@ -112,7 +116,7 @@ export default function Home() {
               {shortUrl}
             </a>
             <button onClick={() => copyText(shortUrl)} className="btn-success">
-              复制链接
+              {t('copyButton')}
             </button>
           </div>
         )}

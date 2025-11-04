@@ -1,0 +1,19 @@
+{
+  "Home": {
+    "title": "短链接生成器",
+    "longUrlLabel": "长链接",
+    "longUrlPlaceholder": "https://example.com",
+    "customCodeLabel": "自定义短码（可选）",
+    "customCodePlaceholder": "myurl",
+    "customCodeHint": "小写字母数字，1-10位",
+    "generateButton": "生成短链接",
+    "yourShortUrl": "你的短链接：",
+    "copyButton": "复制",
+    "successMessage": "短链接创建成功！立即复制",
+    "errorPrefix": "错误："
+  },
+  "Toast": {
+    "copied": "已复制！",
+    "copyFailed": "复制失败"
+  }
+}

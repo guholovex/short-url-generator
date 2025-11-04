@@ -1,0 +1,19 @@
+{
+  "Home": {
+    "title": "Short-URL-Generator",
+    "longUrlLabel": "Long URL",
+    "longUrlPlaceholder": "https://example.com",
+    "customCodeLabel": "Custom shortcode (optional)",
+    "customCodePlaceholder": "myurl",
+    "customCodeHint": "Lower case alphanumeric, 1-10 digits",
+    "generateButton": "Generate short URL",
+    "yourShortUrl": "Your short URL:",
+    "copyButton": "Copy",
+    "successMessage": "Short link created! Copy it now",
+    "errorPrefix": "Error: "
+  },
+  "Toast": {
+    "copied": "Copied!",
+    "copyFailed": "Copy failed"
+  }
+}
