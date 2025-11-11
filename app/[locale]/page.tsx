@@ -11,6 +11,7 @@ export default function Home() {
   const [customCode, setCustomCode] = useState('');
   const [shortUrl, setShortUrl] = useState('');
   const [message, setMessage] = useState('');
+  const [expiresInDays, setExpiresInDays] = useState(10); // 默认有效期 10 天
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +20,11 @@ export default function Home() {
       const res = await fetch('/shorten', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, custom_code: customCode }),
+        body: JSON.stringify({
+          url,
+          custom_code: customCode,
+          expires_in_days: expiresInDays,
+        }),
       });
       const data = await res.json();
       if (data.error) {
@@ -95,6 +100,31 @@ export default function Home() {
               className="form-group input"
             />
             <small>{t('customCodeHint')}</small>
+          </div>
+
+          {/* 新增：有效期 select */}
+          <div className="form-group">
+            <label htmlFor="expires_in_days">
+              {t('expiresLabel', { defaultMessage: '有效期' })}
+            </label>
+            <select
+              id="expires_in_days"
+              value={expiresInDays}
+              onChange={(e) => setExpiresInDays(Number(e.target.value))}
+              className="form-group input"
+            >
+              <option value="permanent">
+                {t('permanent', { defaultMessage: '永久' })}
+              </option>
+              {[1, 3, 7, 10].map((d) => (
+                <option key={d} value={d}>
+                  {t('days', { count: d })} {/* i18n: "1 天", "3 天" 等 */}
+                </option>
+              ))}
+            </select>
+            <small>
+              {t('expiresHint', { defaultMessage: '1-10 天，过期后链接失效' })}
+            </small>
           </div>
 
           <button type="submit" className="btn-primary">

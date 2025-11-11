@@ -10,7 +10,10 @@
     "yourShortUrl": "你的短链接：",
     "copyButton": "复制",
     "successMessage": "短链接创建成功！",
-    "errorPrefix": "错误："
+    "errorPrefix": "错误：",
+    "expiresLabel": "有效期",
+    "days": "{{count}} 天",
+    "expiresHint": "1-10 天，过期后链接失效"
   },
   "Toast": {
     "copied": "已复制！",

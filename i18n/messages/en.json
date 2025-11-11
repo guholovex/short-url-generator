@@ -10,7 +10,10 @@
     "yourShortUrl": "Your short URL:",
     "copyButton": "Copy",
     "successMessage": "Short link created! ",
-    "errorPrefix": "Error: "
+    "errorPrefix": "Error: ",
+    "expiresLabel": "Expiration Period",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "expiresHint": "1-10 days, the link will expire after the period"
   },
   "Toast": {
     "copied": "Copied!",

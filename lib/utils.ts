@@ -116,19 +116,6 @@ export async function saveShortUrl(
       }
       shortCode = data as string;
       console.log('Custom code success:', shortCode);
-      // try {
-      // } catch (rpcError) {
-      //   console.log('Custom RPC failed:', rpcError.message);
-      //   // 如果自定义无效/冲突，继续 fallback
-      //   if (
-      //     rpcError.message.includes('自定义短码无效') ||
-      //     rpcError.message.includes('短码已存在')
-      //   ) {
-      //     // 不 throw，继续 JS fallback
-      //   } else {
-      //     throw rpcError; // 其他错误如 URL 无效
-      //   }
-      // }
     }
 
     if (!shortCode) {
