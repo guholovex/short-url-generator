@@ -12,7 +12,7 @@
     "successMessage": "Short link created! ",
     "errorPrefix": "Error: ",
     "expiresLabel": "Expiration Period",
-    "days": "{count, plural, one {# day} other {# days}}",
+    "days": "{count, plural, one {# 天} other {# 天}}",
     "expiresHint": "1-10 days, the link will expire after the period"
   },
   "Toast": {

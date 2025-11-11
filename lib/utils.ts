@@ -54,7 +54,7 @@ export async function shortCodeExists(
     .from('short_urls')
     .select('id')
     .eq('short_code', shortCode.toLowerCase())
-    .gte('expires_at', 'now()') // 只查未过期
+    .or('expires_at.is.null, gte.expires_at,now()') // 过滤有效链接
     .maybeSingle();
   if (error) throw error;
 
@@ -68,12 +68,15 @@ export async function saveShortUrl(
   longUrl: string,
   customCode?: string,
   ip?: string, // 用于限流
-  expiresInDays: number = 10
+  expiresInDays: number | null = 10
 ): Promise<string> {
   try {
     if (longUrl.length > 2000) throw new Error('URL 过长');
     if (!longUrl.startsWith('http')) longUrl = 'https://' + longUrl;
     if (!/^https?:\/\//.test(longUrl)) throw new Error('无效 URL');
+
+    const effectiveDays =
+      expiresInDays === null || expiresInDays <= 0 ? 0 : expiresInDays;
 
     // 限流（KV-based，5/min per IP）
     if (ip && db.kv) {
@@ -105,7 +108,7 @@ export async function saveShortUrl(
       const { data, error } = await db.supabase.rpc('save_short_url_rpc', {
         long_url_input: longUrl,
         custom_code_input: customCode,
-        expires_days_input: expiresInDays,
+        expires_days_input: effectiveDays,
       });
       if (error) {
         console.log('Custom RPC error:', error.message);
@@ -137,7 +140,7 @@ export async function saveShortUrl(
         await db.supabase.rpc('save_short_url_rpc', {
           long_url_input: longUrl,
           custom_code_input: shortCode,
-          expires_days_input: expiresInDays,
+          expires_days_input: effectiveDays,
         });
       if (fallbackError) {
         console.log('Fallback RPC error:', fallbackError.message);
@@ -151,9 +154,14 @@ export async function saveShortUrl(
       console.log('Fallback RPC success:', shortCode);
     }
 
+    const cacheOpts: { ex?: number } = {};
+    if (effectiveDays > 0) {
+      cacheOpts.ex = effectiveDays * 86400; // 秒级 TTL
+    }
+
     // 缓存结果 1h
-    await db.kv.set(cacheKey, shortCode, { ex: 3600 });
-    await db.kv.set(`code:${shortCode.toLowerCase()}`, longUrl, { ex: 3600 }); // 反向缓存
+    await db.kv.set(cacheKey, shortCode, cacheOpts);
+    await db.kv.set(`code:${shortCode.toLowerCase()}`, longUrl, cacheOpts); // 反向缓存
 
     return shortCode;
   } catch (error: any) {
@@ -179,7 +187,7 @@ export async function getLongUrl(
       .from('short_urls')
       .select('long_url')
       .eq('short_code', shortCode.toLowerCase())
-      .gte('expires_at', 'now()')
+      .or('expires_at.is.null, gte.expires_at,now()') // 过滤有效链接
       .maybeSingle();
     if (error) throw error;
     if (!data) return null;
