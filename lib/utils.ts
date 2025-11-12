@@ -112,7 +112,7 @@ export async function saveShortUrl(
       });
       if (error) {
         console.log('Custom RPC error:', error.message);
-        throw error; // 显式 throw，统一 catch
+        throw error;
       }
       if (!data) {
         throw new Error('自定义 RPC 返回空数据');
@@ -193,7 +193,7 @@ export async function getLongUrl(
     if (!data) return null;
 
     const longUrl = (data as Record<string, string>).long_url;
-    await db.kv.set(cacheKey, longUrl, { ex: 3600 });
+    await db.kv.set(cacheKey, longUrl, { ex: 3600 }); // 暂存 1h
 
     // 原子更新点击
     await updateClicks(db.supabase, shortCode);
@@ -207,7 +207,7 @@ export async function getLongUrl(
 
 // 辅助：点击 RPC
 async function updateClicks(supabase: any, shortCode: string) {
-  if (!shortCode) return; // 新增：null 安全
+  if (!shortCode) return;
   const { error } = await supabase.rpc('increment_clicks_rpc', {
     short_code_input: shortCode,
   });
