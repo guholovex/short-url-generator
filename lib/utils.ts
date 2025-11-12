@@ -45,6 +45,7 @@ export async function shortCodeExists(
   db: DbConnection,
   shortCode: string
 ): Promise<boolean> {
+  if (!shortCode) return false; // 新增：null 安全
   const cacheKey = `exists:${shortCode.toLowerCase()}`;
   const cached = await db.kv.get<boolean>(cacheKey);
   if (cached !== undefined) return cached; // KV 缓存 5min
@@ -53,7 +54,8 @@ export async function shortCodeExists(
     .from('short_urls')
     .select('id')
     .eq('short_code', shortCode.toLowerCase())
-    .maybeSingle(); // .single() 加速
+    .or('expires_at.is.null, gte.expires_at,now()') // 过滤有效链接
+    .maybeSingle();
   if (error) throw error;
 
   const exists = !!data;
@@ -65,15 +67,19 @@ export async function saveShortUrl(
   db: DbConnection,
   longUrl: string,
   customCode?: string,
-  ip?: string // 用于限流
+  ip?: string, // 用于限流
+  expiresInDays: number | null = 10
 ): Promise<string> {
   try {
     if (longUrl.length > 2000) throw new Error('URL 过长');
     if (!longUrl.startsWith('http')) longUrl = 'https://' + longUrl;
     if (!/^https?:\/\//.test(longUrl)) throw new Error('无效 URL');
 
+    const effectiveDays =
+      expiresInDays === null || expiresInDays <= 0 ? 0 : expiresInDays;
+
     // 限流（KV-based，5/min per IP）
-    if (ip) {
+    if (ip && db.kv) {
       const rateKey = `rate:${ip}`;
       const now = Date.now();
       let rateData = (await db.kv.get<{ count: number; time: number }>(
@@ -90,38 +96,72 @@ export async function saveShortUrl(
       );
     }
 
-    // 检查现有 URL（缓存）
+    // 检查现有 URL （缓存 + 未过期 DB）
     const cacheKey = `url:${longUrl.toLowerCase()}`;
     const cachedShort = await db.kv.get<string>(cacheKey);
     if (cachedShort) return cachedShort;
 
-    // RPC 前加 log
-    console.log('Calling RPC with params:', {
-      long_url_input: longUrl,
-      custom_code_input: customCode || null,
-    });
-    // 用 RPC 原子保存
-    const { data, error } = await db.supabase.rpc('save_short_url_rpc', {
-      long_url_input: longUrl,
-      custom_code_input: customCode || null,
-    } as never);
-    if (error) {
-      console.error('RPC error details:', error);
-      throw new Error(`保存失败: ${error.message}`);
-    }
-    if (!data) throw new Error('RPC 返回空');
+    let shortCode: string | null = null;
 
-    const shortCode = data as string;
+    // 优先自定义（用 RPC 原子验证/插入）
+    if (customCode) {
+      const { data, error } = await db.supabase.rpc('save_short_url_rpc', {
+        long_url_input: longUrl,
+        custom_code_input: customCode,
+        expires_days_input: effectiveDays,
+      });
+      if (error) {
+        console.log('Custom RPC error:', error.message);
+        throw error;
+      }
+      if (!data) {
+        throw new Error('自定义 RPC 返回空数据');
+      }
+      shortCode = data as string;
+      console.log('Custom code success:', shortCode);
+    }
+
+    if (!shortCode) {
+      let attempts = 0;
+      while (attempts < 5) {
+        const candidateCode = generateShortCode(longUrl);
+        if (!(await shortCodeExists(db, candidateCode))) {
+          shortCode = candidateCode;
+          break;
+        }
+        attempts++;
+      }
+      if (!shortCode || attempts >= 5) throw new Error('生成短码冲突，请重试');
+
+      console.log('JS fallback generated:', shortCode);
+
+      // 用 RPC 插入 JS 生成的码（原子，传为 "自定义"）
+      const { data: fallbackData, error: fallbackError } =
+        await db.supabase.rpc('save_short_url_rpc', {
+          long_url_input: longUrl,
+          custom_code_input: shortCode,
+          expires_days_input: effectiveDays,
+        });
+      if (fallbackError) {
+        console.log('Fallback RPC error:', fallbackError.message);
+        throw fallbackError;
+      }
+      if (!fallbackData) {
+        throw new Error('Fallback RPC 返回空数据');
+      }
+
+      shortCode = fallbackData as string;
+      console.log('Fallback RPC success:', shortCode);
+    }
+
+    const cacheOpts: { ex?: number } = {};
+    if (effectiveDays > 0) {
+      cacheOpts.ex = effectiveDays * 86400; // 秒级 TTL
+    }
 
     // 缓存结果 1h
-    await db.kv.set(cacheKey, shortCode, { ex: 3600 });
-    await db.kv.set(`code:${shortCode.toLowerCase()}`, longUrl, { ex: 3600 }); // 反向缓存
-
-    if (customCode) {
-      // 额外检查自定义码（RPC 已处理，但日志）
-      if (await shortCodeExists(db, shortCode))
-        console.warn('自定义码冲突，但 RPC 通过');
-    }
+    await db.kv.set(cacheKey, shortCode, cacheOpts);
+    await db.kv.set(`code:${shortCode.toLowerCase()}`, longUrl, cacheOpts); // 反向缓存
 
     return shortCode;
   } catch (error: any) {
@@ -147,12 +187,13 @@ export async function getLongUrl(
       .from('short_urls')
       .select('long_url')
       .eq('short_code', shortCode.toLowerCase())
+      .or('expires_at.is.null, gte.expires_at,now()') // 过滤有效链接
       .maybeSingle();
     if (error) throw error;
     if (!data) return null;
 
     const longUrl = (data as Record<string, string>).long_url;
-    await db.kv.set(cacheKey, longUrl, { ex: 3600 });
+    await db.kv.set(cacheKey, longUrl, { ex: 3600 }); // 暂存 1h
 
     // 原子更新点击
     await updateClicks(db.supabase, shortCode);
@@ -160,12 +201,13 @@ export async function getLongUrl(
     return longUrl;
   } catch (error: any) {
     console.error('getLongUrl error:', error);
-    throw error;
+    return null;
   }
 }
 
 // 辅助：点击 RPC
 async function updateClicks(supabase: any, shortCode: string) {
+  if (!shortCode) return;
   const { error } = await supabase.rpc('increment_clicks_rpc', {
     short_code_input: shortCode,
   });

@@ -1,0 +1,23 @@
+{
+  "Home": {
+    "title": "Short-URL-Generator",
+    "longUrlLabel": "Long URL",
+    "longUrlPlaceholder": "https://example.com",
+    "customCodeLabel": "Custom shortcode (optional)",
+    "customCodePlaceholder": "myurl",
+    "customCodeHint": "Lower case alphanumeric, 1-10 digits",
+    "generateButton": "Generate short URL",
+    "yourShortUrl": "Your short URL:",
+    "copyButton": "Copy",
+    "successMessage": "Short link created! ",
+    "errorPrefix": "Error: ",
+    "expiresLabel": "Expiration Period",
+    "permanent": "permanent",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "expiresHint": "1-10 days, the link will expire after the period"
+  },
+  "Toast": {
+    "copied": "Copied!",
+    "copyFailed": "Copy failed"
+  }
+}
