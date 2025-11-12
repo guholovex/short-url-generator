@@ -110,20 +110,24 @@ export default function Home() {
 
           {/* 新增：有效期 select */}
           <div className="form-group">
-            <label htmlFor="expires_in_days">{t('expiresLabel')}</label>
-            <select
-              id="expires_in_days"
-              value={expiresInDays}
-              onChange={(e) => setExpiresInDays(Number(e.target.value))}
-              className="form-group input"
-            >
-              <option value="permanent">{t('permanent')}</option>
-              {[1, 3, 7, 10].map((d) => (
-                <option key={d} value={d}>
-                  {t('days', { count: d })} {/* i18n: "1 天", "3 天" 等 */}
-                </option>
-              ))}
-            </select>
+            <div className="mb-2">
+              <label className="p-1 pl-0" htmlFor="expires_in_days">
+                {t('expiresLabel')}
+              </label>
+              <select
+                id="expires_in_days"
+                value={expiresInDays}
+                onChange={(e) => setExpiresInDays(Number(e.target.value))}
+                className="form-group input"
+              >
+                <option value="permanent">{t('permanent')}</option>
+                {[1, 3, 7, 10].map((d) => (
+                  <option key={d} value={d}>
+                    {t('days', { count: d })} {/* i18n: "1 天", "3 天" 等 */}
+                  </option>
+                ))}
+              </select>
+            </div>
             <small>{t('expiresHint')}</small>
           </div>
 
